@@ -252,3 +252,4 @@ poetry.toml
 
 .python-version
 
+test_audio.mp3
