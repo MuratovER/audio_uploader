@@ -20,6 +20,8 @@ docker-compose up -d --build
 2. Login by code #If use swagger, authrozie in it 'Bearer {your token}'
 3. Make request
 
+swagger_uri = /api/swagger
+
 #### Export local envs
 ```shell
 cat .env.example > .env.local
