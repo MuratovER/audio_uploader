@@ -10,6 +10,7 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     docs_url="/api/swagger",
 )
+
 app.include_router(api_router)
 
 

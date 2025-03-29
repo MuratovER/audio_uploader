@@ -1,19 +1,22 @@
 import os
 from pathlib import Path
+from typing import Optional
 
 from fastapi import Depends, UploadFile
 from loguru import logger
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
+from core.config import settings
 from core.constants import get_available_audio_types
 from core.exceptions import (
     filename_arleady_exist_exception,
     filename_was_not_provided,
+    max_file_size_exception,
     unsuported_audio_type_provided,
 )
+from db.models.audio import AudioFile
 from db.repositories.audiofile import AudioFileRepository
 from db.session import get_session
-from schemas.audiofile import AudioFileSchema
 
 
 class AudioFilesService:
@@ -25,10 +28,29 @@ class AudioFilesService:
         self._repository = repository
         self._session = session
 
-    async def upload_file(self, audiofile: UploadFile, audiofile_data: AudioFileSchema):
+    @staticmethod
+    def get_file_size(file: UploadFile) -> float:
         """
-        Receive File, store to disk
+        Get file size in Mb.
         """
+
+        file.file.seek(0, 2)
+        size = file.file.tell()
+        file.file.seek(0)
+
+        return size / (1024 * 1024)
+
+    async def upload_file(
+        self, audiofile: UploadFile, filename: Optional[str], user_id: int
+    ) -> AudioFile:
+        """
+        Receive File & store to disk.
+        """
+        if (
+            filesize := self.get_file_size(file=audiofile)
+        ) > settings().MAX_FILE_SIZE_IN_MB:
+            logger.error(f"File size: {filesize}")
+            raise max_file_size_exception
 
         if audiofile.content_type not in get_available_audio_types():
             logger.error(f"File type: {audiofile.content_type}")
@@ -37,25 +59,23 @@ class AudioFilesService:
         if not audiofile.filename:
             raise filename_was_not_provided
 
-        if audiofile_data.filename and await self._repository.file_exist(
-            user_id=audiofile_data.user_id, filename=audiofile_data.filename
+        if filename and await self._repository.file_exist(
+            user_id=user_id, filename=filename
         ):
-            logger.error(
-                f"File #{audiofile_data.filename} for user {audiofile_data.user_id} exists."
-            )
+            logger.error(f"File #{filename} for user {user_id} exists.")
             raise filename_arleady_exist_exception
 
-        if audiofile_data.filename:
+        if filename:
             extension = audiofile.filename.split(".")[-1]
-            filename = audiofile_data.filename + "." + extension
+            filename = filename + "." + extension
         else:
             filename = audiofile.filename
 
         audiofile_from_db = await self._repository.create(
-            user_id=audiofile_data.user_id, filename=filename
+            user_id=user_id, filename=filename
         )
 
-        tmp_file_dir = f"../files/{audiofile_data.user_id}"
+        tmp_file_dir = f"../files/{user_id}"
 
         Path(tmp_file_dir).mkdir(parents=True, exist_ok=True)
 

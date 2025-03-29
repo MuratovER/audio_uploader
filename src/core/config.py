@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
 
+    YA_CLIENT_ID: str
+    YA_SECRET: str
+
+    MAX_FILE_SIZE_IN_MB: int = 5
+
     @property
     def cors_allow_origins(self) -> list[str]:
         return self.CORS_ALLOW_ORIGIN_LIST.split("&")
