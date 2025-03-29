@@ -1,5 +1,5 @@
 # Audio uploader
-![alt text](https://img.shields.io/badge/python-3.11.2-orange)
+![alt text](https://img.shields.io/badge/python-3.13.2-orange)
 
 ## Technology stack
 
@@ -14,6 +14,13 @@
 ```shell
 docker-compose up -d --build
 ```
+
+### Pipeline
+1. Get code 
+2. Login by code #If use swagger, authrozie in it 'Bearer {your token}'
+3. Make request
+
+swagger_uri = /api/swagger
 
 #### Export local envs
 ```shell
