@@ -1,5 +1,6 @@
 import functools
 import pathlib
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,6 +24,8 @@ class Settings(BaseSettings):
 
     YA_CLIENT_ID: str
     YA_SECRET: str
+
+    ADMIN_ID: Optional[int] = None  # Get from user info
 
     MAX_FILE_SIZE_IN_MB: int = 5
 

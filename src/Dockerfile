@@ -17,11 +17,11 @@ ARG DEV_DEPS=False
 COPY ./src/pyproject.toml ./src/poetry.lock ./
 
 RUN apk add build-base zlib-dev\
-  && pip install --no-cache-dir "poetry<2.0" \
+  && pip install --no-cache-dir poetry \
   && python -m venv /venv \
   && if [ $DEV_DEPS = True ] ; then \
-       poetry install --no-cache --no-interaction --no-ansi && poetry add poetry ; else \
-       poetry install --no-cache --only main --no-interaction --no-ansi ; fi \
+       poetry install --no-root --no-cache --no-interaction --no-ansi && poetry add poetry ; else \
+       poetry install --no-root --no-cache --only main --no-interaction --no-ansi ; fi \
   && apk del build-base zlib-dev
 
 # Final Stage
@@ -42,4 +42,5 @@ COPY ./src ./src
 
 WORKDIR /usr/src/app/src
 
+CMD ["/venv/bin/python", "-m", "alembic", "upgrade", "head"]
 CMD ["/venv/bin/python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "uvloop", "--http", "httptools"]

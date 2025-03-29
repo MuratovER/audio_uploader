@@ -37,10 +37,7 @@ async def refresh(
     path="/code",
 )
 async def get_code():
-    webbrowser.open_new_tab(
-        url=f"https://oauth.yandex.ru/authorize?response_type=code&client_id={settings().YA_CLIENT_ID}"
-    )
-    return HTTP_200_OK
+    return {"url": f"https://oauth.yandex.ru/authorize?response_type=code&client_id={settings().YA_CLIENT_ID}"}
 
 
 @router.get(
