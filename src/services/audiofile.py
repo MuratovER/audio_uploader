@@ -1,4 +1,5 @@
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional
 
@@ -40,6 +41,9 @@ class AudioFilesService:
 
         return size / (1024 * 1024)
 
+    async def get_files_by_user_id(self, user_id: int) -> Sequence[AudioFile]:
+        return await self._repository.get_files_by_user_id(user_id=user_id)
+
     async def upload_file(
         self, audiofile: UploadFile, filename: Optional[str], user_id: int
     ) -> AudioFile:
@@ -59,8 +63,9 @@ class AudioFilesService:
         if not audiofile.filename:
             raise filename_was_not_provided
 
-        if filename and await self._repository.file_exist(
-            user_id=user_id, filename=filename
+        request_filename = filename if filename else audiofile.filename 
+        if await self._repository.file_exist(
+            user_id=user_id, filename=request_filename
         ):
             logger.error(f"File #{filename} for user {user_id} exists.")
             raise filename_arleady_exist_exception

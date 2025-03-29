@@ -5,7 +5,11 @@ from fastapi import Depends
 from fastapi.security import APIKeyHeader
 
 from core.config import settings
-from core.exceptions import invalid_access_token_exception, yandex_oauth_exception
+from core.exceptions import (
+    invalid_access_token_exception,
+    not_enough_permissions_exception,
+    yandex_oauth_exception,
+)
 from schemas.auth import AuthSchema
 
 header_scheme = APIKeyHeader(name="Authorization")
@@ -37,6 +41,16 @@ class YaOauthService:
             raise yandex_oauth_exception
 
         return AuthSchema(**response.json())
+
+
+async def get_admin_user(
+    token: Annotated[str, Depends(header_scheme)],
+) -> dict[str, Any]:
+    user = await get_current_user(token=token)
+    if int(user["id"]) != settings().ADMIN_ID:
+        raise not_enough_permissions_exception
+
+    return user
 
 
 async def get_current_user(

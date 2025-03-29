@@ -10,6 +10,7 @@ fix:
 	@echo "Fix project"
 	poetry run ruff format .
 	poetry run ruff check . --fix --select I
+	poetry run ruff check . --fix
 
 test:
 	@echo "Run tests"
